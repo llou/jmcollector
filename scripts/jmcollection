@@ -1,0 +1,33 @@
+#! /bin/env/python
+
+import argparse
+import jmcollector
+
+class Collection(jmcollector.collection):
+    
+    def add_item(self, item):
+        pass
+
+    def remove_item(self, item):
+        pass
+
+    def list_items(self):
+        pass
+
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparser()
+    add_parser = subparsers.add_parser('add', description="add content to the collection")
+    remove_parser = subparsers.add_parser('remove', description="remove content from the collection")
+    verify_parser = subparsers.add_parser('verify', descritprion="verify the integrity of the collection")
+    list_parser = subparsers.add_parser('list', description="list contents of the collection")
+    return parser
+
+def main():
+    c = Collection()
+
+
+
+
+

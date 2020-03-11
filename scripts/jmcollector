@@ -1,0 +1,40 @@
+#! /bin/env/python
+
+import sys
+import argparse
+import jmcollector
+
+
+def add_collection():
+    c = jmcollector()
+    c.add()
+
+
+def remove_collection():
+    c = jmcollector()
+    c.remove()
+
+
+def verify_collections():
+    c = jmcollector()
+    c.verify()
+
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparser()
+    add_parser = subparsers.add_parser('add', description="add a new collection")
+    add_parser.set_defaults(func=add_collection)
+    remove_parser = subparsers.add_parser('remove', description="remove collection")
+    remove_parser.set_defaults(func=remove_collection)
+    verify_parser = subparsers.add_parser('verify', descritprion="verify the integrity all the collections")
+    verify_parser.set_defaults(func=remove_collection)
+    list_parser = subparsers.add_parser('list', description="list contents of the collection")
+    list_parser.set_defaults(func=remove_collection)
+    return parser
+
+
+def main():
+    parser = get_parser()
+    args = parser.parse_args(sys.argv[1:])
+    args.func()
