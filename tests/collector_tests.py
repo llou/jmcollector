@@ -189,5 +189,26 @@ class CollectorTestCase(unittest.TestCase):
     pass
 
 
+class ComputeAlphaTestCase(unittest.TestCase):
+    compute_alpha = staticmethod(jmcollector.Item.compute_alpha)
+
+    def test_always_10(self):
+        self.assertEqual(self.compute_alpha(10, 10, 10), 1)
+        self.assertEqual(self.compute_alpha(10, 5, 10), 1)
+        self.assertEqual(self.compute_alpha(10, 7, 10), 1)
+        self.assertEqual(self.compute_alpha(10, 3, 10), 1)
+
+    def test_only_1(self):
+        self.assertEqual(self.compute_alpha(1, 0, 0), 0.1)
+        self.assertEqual(self.compute_alpha(1, 1, 5), 0)
+        self.assertEqual(self.compute_alpha(1, 1, 5), 0)
+        self.assertEqual(self.compute_alpha(1, 2, 5), 0)
+        self.assertEqual(self.compute_alpha(1, 0, 5), 0.1)
+
+    def test_order(self):
+        self.assertGreater(self.compute_alpha(10, 0, 0), self.compute_alpha(1, 0, 0))
+        self.assertGreater(self.compute_alpha(5, 2, 5), self.compute_alpha(5, 3, 5))
+        self.assertGreater(self.compute_alpha(7, 3, 5), self.compute_alpha(5, 3, 5))
+
 if __name__ == "__main__":
     unittest.main()

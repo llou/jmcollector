@@ -180,14 +180,47 @@ class Item:
     equality_attributes = ["name", "collection", "relative_path"]
     is_dir = None
 
+    @staticmethod
+    def compute_alpha(value, n_volumes, total_volumes):
+        """Compute alpha is the algorithm used to sort collection items to be 
+        included in the next volume. It works this way:
 
-    def __init__(self, name, collection, relative_path, size, value=5, sha1=""):
+            * if item value is a 1 it is included only once, as is alpha value
+              is 0.1 while not included and 0 afterwards.
+            * if item value is a 10 it is included in all volumes as its value
+              is 1 for all volumes.
+            * for other items we compute the actual state, this is the number
+              of times it is included in a volume divided between the number of
+              volumes. Then we compute the optival value, this is the proportion
+              of volumes that the item should be in, we do it as the value
+              divided by ten. Alpha is then computed as the difference of these
+              two. 
+        
+        This is done this way to ensure that items that are in many volumes
+        have less alpha than those that are in a few.
+        """
+        assert(n_volumes <= total_volumes)
+        if value == 1:
+            if n_volumes:
+                return 0
+        if value == 10:
+            return 1
+        if total_volumes == 0:
+            return float(value)/10
+        state = float(n_volumes)/total_volumes
+        optimal = float(value)/10
+        return optimal - state
+
+
+    def __init__(self, name, collection, relative_path, size, value=5, sha1="", 
+                 volumes=[]):
         self.name = name
         self.collection = collection
         self.relative_path = Path(relative_path)
         self.path = Path(collection.path, relative_path)
         self.size = size
         self.value = value
+        self.volumes = volumes
         self.sha1 = sha1
 
     @property
@@ -200,6 +233,9 @@ class Item:
     @property
     def huge(self):
         return self.size > VOLUME_MAX_SIZE
+
+    def get_alpha(self, total_volumes):
+        return self.compute_alpha(self.value, len(self.volumes), total_volumes)
 
     def get_hash(self):
         "Returns an unique identifier of the item content"
@@ -234,10 +270,10 @@ class FileItem(Item):
         return cls(file, name, collection, relative_path, file.size, file.sha1)
 
     def __init__(self, file, name, collection, relative_path, size, value=5, 
-                 sha1="", archived_in=[]):
+                 sha1="", volumes=[]):
         self.file = file
         super().__init__(name, collection, relative_path, size, value=value, 
-                         sha1=sha1)
+                         sha1=sha1, volumes=volumes)
      
     def iter_files(self):
         yield self.file
@@ -282,9 +318,9 @@ class DirectoryItem(Item):
         return cls(files, name, collection, directory_name, size)
 
     def __init__(self, files, name, collection, relative_path, size, value=5, 
-                 sha1=""):
+                 sha1="", volumes=[]):
         super().__init__(name, collection, relative_path, size, value=value, 
-                         sha1=sha1)
+                         sha1=sha1, volumes=volumes)
         self.files = []
         self.sha1_table = ""
         self.sha1 = sha1
@@ -390,33 +426,22 @@ class Collector:
         self.path = path
         self.collections = []
 
+    def iter_items(self):
+        for collection in self.collections:
+            for item in collection.iter_items(self):
+                yield item
+
     def add_collection(self, collection):
         self.collections.append(collection)
 
 
-def get_parser():
-    parser = argparse.ArgumentParser(description="Manages a collection of data")
-    subparsers = parser.add_subparsers()
-    parser_add = subparsers.add_parser('add', description="adds new content to the collection")
+class Volume:
+    """Represents a group of items stored in the same removable media, normally a disk"""
 
-    parser_verify = subparsers.add_parser('verify')
-    parser_list_files = subparsers.add_parser('list-files')
-    parser_list_files.set_defaults(func=list_files)
-    parser_list_items = subparsers.add_parser('list-items')
-    parser_list_items.set_defaults(func=list_items)
-    parser_dump = subparsers.add_parser('dump')
-    parser_resume = subparsers.add_parser('resume')
-    return parser
+    @classmethod
+    def __init__(self, id, items):
+        self.id = id
+        self.items = items
 
 
-def main():
-    # TODO  Fix to support default windows and mac paths
-    c = Collection.build_from_files()
-    #parser = get_parser()
-    #args = parser.parse_args(sys.argv[1:])
-    #args.func()
-    list_items(c)
 
-
-if __name__ == "__main__":
-    main()
