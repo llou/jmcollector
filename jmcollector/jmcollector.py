@@ -419,8 +419,8 @@ class DirectoryCollection(Collection):
 
 
 class Collector:
-    """The root of the collection system, an object that represents the main directory of the 
-    collection"""
+    """The root of the collection system, an object that represents the main directory
+     of the collection"""
 
     def __init__(self, path):
         self.path = path
