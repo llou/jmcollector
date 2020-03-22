@@ -37,6 +37,9 @@ class Collection:
     def item_path_iterator(self, path):
         raise NotImplemented
 
+    @classmethod
+    def file_path_iterator(self, path):
+        raise NotImpolemented
 
     def __init__(self, items, collector):
         self.items = items

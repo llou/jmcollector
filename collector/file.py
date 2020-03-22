@@ -47,9 +47,17 @@ class File:
     def set_sha1(self, sha1):
         self.sha1 = sha1
 
+    async def awaitable_async_stuff(self, pool):
+        await self.compute_hash(pool)
+        await self.get_size()
+
     def compute_hash(self, pool):
           pool.apply_async(get_sha1_file,[self.path], 
                            self.set_sha1)
+
+    async def get_size(self):
+        return await self.path.stat().st_size
+
 
     def __eq__(self, other):
         return repr(self) == repr(other)

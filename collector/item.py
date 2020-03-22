@@ -7,6 +7,8 @@ class Item:
     class Builder:
         def __init__(self):
             self.name = ""
+            self.collection = None
+            self.path = None
             self.relative_path = ""
             self.size = 0
             self.value = 5
@@ -15,6 +17,14 @@ class Item:
 
         def set_name(self, name):
             self.name = name
+            return self
+
+        def set_collection(self, collection):
+            self.collection = collection
+            return self
+
+        def set_path(self, path):
+            self.path = path
             return self
 
         def set_relative_path(self, relative_path):
@@ -39,6 +49,8 @@ class Item:
 
         def build(self):
             return Item(self.name,
+                        self.collection,
+                        self.path,
                         self.relative_path,
                         self.size,
                         value=self.value,
@@ -46,10 +58,10 @@ class Item:
                         volumes=self.volumes)
 
 
-    def __init__(self, name, relative_path, size, value=5, sha1="", 
+    def __init__(self, name, collection, path, relative_path, size, value=5, sha1="", 
                  volumes=[]):
         self.name = name
-        self.path = None
+        self.path = path
         self.relative_path = relative_path
         self.size = size
         self.value = value
@@ -95,6 +107,10 @@ class Item:
 class FileItem(Item):
     "An Item that consist of a singular file."
 
+    @classmethod
+    def is_directory(self):
+        return False
+
     class Builder(Item.Builder):
         def __init__(self):
             self.file = None
@@ -119,7 +135,7 @@ class FileItem(Item):
         self.file = file
         super().__init__(name, collection, relative_path, size, value=value, 
                          sha1=sha1, volumes=volumes)
-     
+
     def iter_files(self):
         yield self.file
 
@@ -135,6 +151,10 @@ class FileItem(Item):
 
 class DirectoryItem(Item):
     "An item that consists of a directory that contains multiple files"
+
+    @classmethod
+    def is_directory(self):
+        return True
 
     class Builder(Item.Builder):
         def __init__(self):
@@ -159,6 +179,8 @@ class DirectoryItem(Item):
         super().__init__(name, collection, relative_path, size, value=value, 
                          sha1=sha1, volumes=volumes)
         self.files = files
+
+
 
     def compute_sha1(self):
         # XXX Y el sort pa quien
