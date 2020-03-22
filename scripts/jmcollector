@@ -4,26 +4,16 @@ import sys
 import argparse
 import jmcollector
 
-
-def add_collection():
-    c = jmcollector()
-    c.add()
-
-
-def remove_collection():
-    c = jmcollector()
-    c.remove()
-
-
-def verify_collections():
-    c = jmcollector()
-    c.verify()
+"""
+This script works at the highest level. It manages all collections
+as one, building it from source dirs or volumes. Verifying its 
+consistency."""
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparser()
-    add_parser = subparsers.add_parser('add', description="add a new collection")
+    _parser = subparsers.add_parser('add', description="add a new collection")
     add_parser.set_defaults(func=add_collection)
     remove_parser = subparsers.add_parser('remove', description="remove collection")
     remove_parser.set_defaults(func=remove_collection)

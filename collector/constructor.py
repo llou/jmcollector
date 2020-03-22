@@ -1,5 +1,5 @@
 from pathlib import Path
-from multiprocessing import Pool, procount
+from multiprocessing import Pool, cpu_count 
 
 DEFAULT_VALUE = 5
 
@@ -7,14 +7,14 @@ class CollectionConstructor:
     """An executive class that goes through the rough and wild data enviroments
     and manages to construct the system classes."""
 
-    collection_class = Collection
 
-    def __init__(self, collector):
+    def __init__(self, collector, collection_class):
         self.collector = collector
+        self.collection_class = collection_class
         self.relative_path = Path(self.collection_class.relative_path)
-        self.item_class = Path(self.collection_class.relative_path)
-        self.file_class = Path(self.collection_class.file_class)
-        self.path = Path(self.collector.path, relative_path)
+        self.path = Path(self.collector.path, self.relative_path)
+        self.item_class = self.collection_class.item_class
+        self.file_class = self.collection_class.file_class
 
     def prebuild_stuff(self, builder):
         "Here loads the items to the class"
@@ -25,40 +25,28 @@ class CollectionConstructor:
         pass
 
     def construct(self, relative_path):
+        # Instantiates the Collection class builder
         builder = self.collection_class.Builder()
+        # Sets the collector for the collection
         builder.set_collector(self.collector)
+        # Invoques subclasses building stuff
         self.prebuild_stuff(builder)
+
         collection = builder.Build()
+        # Let subclasses run some of their postbuild stuff
         self.postbuild_stuff(collection)
-        pool = Pool(proccount())
-        asyncio.run(self.run_async_tasks(collection.iter_files, pool))
-        pool.join()
 
-    async def run_async_tasks(col
+    def run_async_tasks(collection, pool):
+        pass
 
 
-class FileSystemInitializer(Constructor):
-    "An object that grabs data from the file system and builds a collection"
-    "into the database"
+class FileSystemCollectionInitializer(CollectionConstructor):
 
-    collection_class = Collection
+    def get_item_name_from_path(self, item_path):
+        return self.collection_class.get_item_name_from_item_path(item_path)
 
-    def __init__(self, collector):
-        super().__init__(collector)
-
-    def get_item_name_from_path(self, path):
-        return path.name
-
-    def item_path_iterator(self):
-        "Iter the main directory of the collection for items"
-        for item_path in self.path.iterdir():
-            yield item_path
-
-    def file_path_iterator(self, item_path):
-        "Iter the contents of a DirectoryItem"
-        for dirname, subdirs, files in os.walk(item_path):
-            for f in files:
-                yield f
+    def collection_item_path_iterator(self, item_path):
+        return self.collection_class.item_path_iterator(item_path
 
     def item_get_path_files(self, item_path):
         if path.isfile():
@@ -75,25 +63,27 @@ class FileSystemInitializer(Constructor):
         return builder.build()
 
     def prebuild_stuff(self, collection_builder):
-        for item_abs_path in self.item_path_iterator():
-            item_builder = self.item_class.Builder()
-            item_builder.set_name(self.get_item_name_from_path())
-            item_builder.set_relative_path(item_abs_path.relative_to(self.path))
-            item_files = self.iitem_get_path_files(item_abs_path)
-            if isinstance(self.item_class, FileItem):
-                item_builder.set_file(item_files[0])
-            elif isinstance(self.item_class, DirectoryItem):
-                for file in self.item_files:
-                    item_builder.add_file(file)
-            item = item_builder.build()
-            collection_builder.add(item)
+        # Iterates through all the items paths
+        for item_abs_path in self.collection_item_path_iterator():
+            # Creates a builder for each item path
+            builder = self.item_class.Builder()
+            # Sets the name
+            builder.set_name(self.get_item_name_from_path(path))
+
+
+
 
     def postbuild_sturff(self, collection):
-        for item in collection.items:
-            item.set_collection(collection) 
+        # Iterates through the collection setting back references to upper
+        # classes
+        for item in collection.itet_items():
+            item.set_collection(collection)
+            for file in item.iter_files():
+                file.set_item(item)
         collection_files = list(collection.iter_files())
-        pool = multiprocessing.Pool(8)
-        asyncio.run(self.postbuild_async_stuff(files, poool))
+        # Launch heavy computational stuff.
+        pool = Pool(cpu_count())
+        self.run_async_tasks(collection, pool)
         pool.join()
 
     async def postbuild_async_stuff(self, files, pool):
@@ -101,13 +91,13 @@ class FileSystemInitializer(Constructor):
             await file.awaitable_stuff(pool)
 
 
-class JsonDumpConstructor(Constructor):
+class JsonCollectionConstructor(Constructor):
     """An executive class that given a Json data file builds a complete structure
     of classes representing a collection"""
     pass
 
         
-class DatabaseConstructor(Constructor):
+class DatabaseCollectionConstructor(Constructor):
     """An executive class that given a database content builds a complete structure
     of classes representing a collection"""
     pass

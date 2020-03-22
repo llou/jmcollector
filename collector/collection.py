@@ -29,6 +29,14 @@ class Collection:
         def build(self):
             return Collection(self.items, self.collector)
 
+    @classmethod
+    def get_item_name_from_item_path(self, item_path):
+        raise NotImplemented
+
+    @classmethod
+    def item_path_iterator(self, path):
+        raise NotImplemented
+
 
     def __init__(self, items, collector):
         self.items = items
