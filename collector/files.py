@@ -8,6 +8,7 @@ class File:
             self.path = ""
             self.size = 0
             self.sha1 = ""
+            self.item = None
 
         def set_path(self, path):
             self.relative_path = Path(path)
@@ -21,18 +22,30 @@ class File:
             self.sha1 = sha1
             return self
 
+        def set_item(self, item):
+            self.item = item
+            return self
+
         def build(self):
-            return File(self.path, self.size, sha1=self.sha1)
+            return File(self.path, self.size, sha1=self.sha1, item=None)
 
     def __init__(self, path, size, sha1=None):
         self.path = path
         self.size = size
         self.sha1 = sha1
+        self.item = item
         self.dirname = os.path.dirname(path)
         self.basename = os.path.basename(path)
 
-    async def compute_hash(self, pool):
-        self.sha1 = await pool.apply(get_sha1_file,[self.path])
+    def set_item(self, item):
+        self.item = item
+
+    def set_sha1(self, sha1):
+        self.sha1 = sha1
+
+    def compute_hash(self, pool):
+          pool.apply_async(get_sha1_file,[self.path], 
+                           self.set_sha1)
 
     def __eq__(self, other):
         return repr(self) == repr(other)

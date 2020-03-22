@@ -28,11 +28,13 @@ class CollectionConstructor:
         builder = self.collection_class.Builder()
         builder.set_collector(self.collector)
         self.prebuild_stuff(builder)
-        collection = self.collection_class(self.relative_path, self.collector)
+        collection = builder.Build()
         self.postbuild_stuff(collection)
         pool = Pool(proccount())
-        asyncio.run(self.un_async_tasks(collection.iter_files, pool))
+        asyncio.run(self.run_async_tasks(collection.iter_files, pool))
         pool.join()
+
+    async def run_async_tasks(col
 
 
 class FileSystemInitializer(Constructor):
