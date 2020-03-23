@@ -73,7 +73,7 @@ class Item:
 
     def set_collection(self, collection):
         self.collection = collection
-        self.path = Path(collection.path, relative_path)
+        self.path = Path(collection.path, self.relative_path)
 
     @property
     def collector(self):

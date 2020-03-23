@@ -2,7 +2,6 @@ import sys
 import hashlib
 import platform
 from subprocess import run, PIPE
-from utils import platform
 
 
 raw_platform = platform.platform()
