@@ -8,7 +8,6 @@ class CollectionConstructor:
     """An executive class that goes through the rough and wild data enviroments
     and manages to construct the system classes."""
 
-
     def __init__(self, collector, collection_class):
         self.collector = collector
         self.collection_class = collection_class
@@ -45,27 +44,13 @@ class FileSystemCollectionConstructor(CollectionConstructor):
         return self.collection_class.get_item_name_from_item_path(item_path)
 
     def collection_item_path_iterator(self, collection_path):
-        return self.collection_class.item_path_iterator(collection_path)
+        return self.collection_class.collections_item_path_iterator(collection_path)
 
     def collection_file_path_iterator(self, item_path):
-        return self.collection_class.file_path_iterator(item_path)
+        return self.collection_class.items_file_path_iterator(item_path)
 
-    def get_builder_from_relative_path(self, file_relative_path):
-        return self.collection_class.get_builder_from_relative_path(item_path)
-
-    def item_get_path_files(self, item_path):
-        if path.isfile():
-            return [self.build_file(path)]
-        if path.isdir():
-            result = []
-            for file_path in self.file_path_iterator(path):
-                result.append(self.build_file(file_path))
-            return result
-
-    def build_file(self, file_path):
-        builder = self.file_class.Builder()
-        builder.set_path(file_path)
-        return builder.build()
+    def get_file_builder_from_relative_path(self, file_relative_path):
+        return self.collection_class.get_file_builder_from_relative_path(file_relative_path)
 
     def prebuild_stuff(self, collection_builder):
         # Iterates through all the items paths
@@ -73,28 +58,33 @@ class FileSystemCollectionConstructor(CollectionConstructor):
             # Creates a builder for each item path
             ibuilder = self.item_class.Builder()
             # Sets the name
-            ibuilder.set_name(self.get_item_name_from_path(path))
+            ibuilder.set_name(self.get_item_name_from_path(item_path))
             # Sets the path
             ibuilder.set_path(item_path)
             # Sets the relative path
             ibuilder.set_relative_path(item_path.relative_to(self.collection_path))
-            # Build_files
+            # Checks for one of the two kinds of dirs
             if self.item_class.is_directory():
                 # Request collection for an iterator of files
                 for file_path in self.collection_file_path_iterator(item_path):
                     file_relative_path = file_path.relative_to(item_path)
                     # Request collection for a builder class given rel path
-                    fbuilder = self.get_builder_from_relative_path(file_relative_path)
+                    fbuilder = self.get_file_builder_from_relative_path(file_relative_path)
                     # Set minimum parapeters for file before building
                     fbuilder.set_path(file_path)
                     fbuilder.set_relative_path(file_relative_path)
+                    # Builds the file
                     f = fbuilder.build()
+                    # Adds the file to the item bulder
                     ibuilder.add_file(f)
             else:
+                # In case thats is a single file collection
                 fbuilder = self.collection_class.file_class.Build()
                 fbuilder.set_path(file_path)
+                # Buildes the file
                 f = fbuilder.build()
                 ibuilder.set_file(f)
+            # Builds item
             item = ibuilder.build()
             collection_builder.add_item(item)
 
@@ -113,6 +103,8 @@ class FileSystemCollectionConstructor(CollectionConstructor):
     async def postbuild_async_stuff(self, collection, pool):
         for file in collection.iter_files():
             await file.awaitable_stuff(pool)
+        for item in collection.iter_items():
+            await item.awaitable_stuff(pool)
 
 
 class JsonCollectionConstructor(Constructor):

@@ -1,5 +1,7 @@
+import hashlib
 from pathlib import Path
-from file import File
+from .file import File
+
 
 class Item:
     "The basic element in all the collections"
@@ -179,11 +181,9 @@ class DirectoryItem(Item):
         super().__init__(name, collection, relative_path, size, value=value, 
                          sha1=sha1, volumes=volumes)
         self.files = files
-
-
+        self.files.sort()
 
     def compute_sha1(self):
-        # XXX Y el sort pa quien
         self.sha1_table = "\n".join([str(file) for file in self.files])
         self.sha1 = hashlib.sha1(self.sha1_table.encode("utf-8")).hexdigest()
 

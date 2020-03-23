@@ -29,17 +29,23 @@ class Collection:
         def build(self):
             return Collection(self.items, self.collector)
 
+    # class initialization from filesystem classmethods
+
     @classmethod
-    def get_item_name_from_item_path(self, item_path):
+    def get_item_name_from_item_path(cls, item_path):
         raise NotImplemented
 
     @classmethod
-    def item_path_iterator(self, path):
+    def collections_item_path_iterator(cls, collection_path):
         raise NotImplemented
 
     @classmethod
-    def file_path_iterator(self, path):
+    def items_file_path_iterator(cls, item_path):
         raise NotImpolemented
+
+    @classmethod
+    def get_file_builder_from_relative_path(cls, file_relative_path)
+        raise NotImplemented
 
     def __init__(self, items, collector):
         self.items = items
