@@ -36,6 +36,7 @@ class CollectionConstructor:
 
         # Let subclasses run some of their postbuild stuff
         self.postbuild_stuff(collection)
+        return collection
 
 
 class FileSystemCollectionConstructor(CollectionConstructor):
@@ -107,13 +108,13 @@ class FileSystemCollectionConstructor(CollectionConstructor):
             await item.awaitable_stuff(pool)
 
 
-class JsonCollectionConstructor(Constructor):
+class JsonCollectionConstructor(CollectionConstructor):
     """An executive class that given a Json data file builds a complete structure
     of classes representing a collection"""
     pass
 
         
-class DatabaseCollectionConstructor(Constructor):
+class DatabaseCollectionConstructor(CollectionConstructor):
     """An executive class that given a database content builds a complete structure
     of classes representing a collection"""
     pass
